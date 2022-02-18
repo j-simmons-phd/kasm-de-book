@@ -47,6 +47,33 @@
 # Add additional plays here (remember the list entry -)
 # Be sure to use the same hosts and connection entries above
 # addtional plays
+-
+  # Install/configure tools other than emacs/Org-roam
+  hosts: localhost
+  connection: local
+  gather_facts: yes
+
+  tasks:
+  - name: Update OS to point python to python3
+    apt:
+      name: python-is-python3
+      update_cache: yes
+
+-
+  # Install emacs and Org-roam
+  hosts: localhost
+  connection: local
+  gather_facts: yes
+
+  tasks:
+  - name: Add the Emacs PPA Repository
+    shell:
+      cmd: add-apt-repository ppa:kelleyk/emacs
+      executable: /bin/bash
+  - name: Install emacs 27
+    apt:
+      name: emacs27
+      update_cache: yes    
 
 # Three dots indicate the end of a YAML document
 ...
