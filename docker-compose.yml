@@ -3,7 +3,7 @@ version: "3.7"
 services:
   kasm:
     build: .
-    image: kasm-de-book
+    image: ghcr.io/j-simmons-phd/kasm-de-book:main
     ports:
       - "6901:6901"
     environment:
