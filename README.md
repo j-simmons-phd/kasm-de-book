@@ -6,7 +6,7 @@ This repo provides a Kasm Workspace for developing the definitive text on the pr
 
 - git cli
 - [Keychain](https://www.funtoo.org/Keychain)
-- Emacs with support for [Org-roam](https://www.orgroam.com/) to facillitate a model-based approach to research and note taking
+- [Obsidian](https://obsidian.md/) and [JabRef](https://www.jabref.org/) for note taking
 - Chrome
 - [Evince Document Reader](https://wiki.gnome.org/Apps/Evince) 
 - [Pandoc](https://pandoc.org/)

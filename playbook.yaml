@@ -48,33 +48,131 @@
 # Add additional plays here (remember the list entry -)
 # Be sure to use the same hosts and connection entries above
 # addtional plays
+
 -
-  # Install/configure tools other than emacs/Org-roam
+  # install keychain and git
   hosts: localhost
   connection: local
   gather_facts: yes
+  tags: install_git_keychain
+
+  vars:
+    git_version: "2.35.1"
+    git_version_to_install: "1:{{ git_version }}-0ppa1~ubuntu20.04.1"
+    keychain_version: "2.8.5"
+    keychain_version_to_install: "{{ keychain_version }}-1"
+    keychain_version_expected: "{{ keychain_version }}.."
 
   tasks:
-  - name: Update OS to point python to python3
+  - name: Add git PPA
+    shell: add-apt-repository ppa:git-core/ppa
+  - name: Install git
     apt:
-      name: python-is-python3
+      name: "git={{ git_version_to_install }}"  
+  - name: Install Keychain
+    apt:
+      name: "keychain={{ keychain_version_to_install }}"
+      update_cache: yes
+  - name: Get git version
+    shell: git version | sed 's/[[:alpha:]|(|[:space:]]//g'
+    register: installed_git_version
+  - name: Get keychain version
+    shell: 
+      cmd: keychain -V 2> >(grep -i keychain) 2> >(sed 's/[[:alpha:]|(|[:space:]]//g') | fgrep '*' | sed 's/[*~://]//g'
+      executable: /bin/bash
+    register: installed_keychain_version
+  - name: Display git and keychain versions
+    debug:
+      msg: "git = {{ installed_git_version.stdout }} | keychain = {{ installed_keychain_version.stdout }}"
+  - name: Test git version
+    fail:
+      msg: "Git Version Error: Expected {{ git_version }} | Found {{ installed_git_version.stdout }}"
+    when: installed_git_version.stdout != git_version  
+  - name: Test keychain version
+    fail:
+      msg: "Keychain Version Error: Expected {{ keychain_version_expected }} | Found {{ installed_keychain_version.stdout }}"
+    when: installed_keychain_version.stdout != keychain_version_expected        
+
+-
+  # Install knowledge capture tools
+  hosts: localhost
+  connection: local
+  tags: install_knowledge_tools
+
+  tasks:
+  - name: Install flatpak
+    apt:
+      name: flatpak
+      update_cache: yes  
+  - name: Configure flatpak
+    shell:
+      cmd: flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo    
+  - name: Install Obsidian
+    shell: 
+      cmd: flatpak install --system --assumeyes --noninteractive flathub md.obsidian.Obsidian    
+  - name: Set up Obsidian shortcut
+    shell:
+      cmd: cp /var/lib/flatpak/exports/share/applications/md.obsidian.Obsidian.desktop /usr/share/applications/md.obsidian.Obsidian.desktop && cp /var/lib/flatpak/exports/share/icons/hicolor/512x512/apps/md.obsidian.Obsidian.png /usr/share/icons/hicolor/512x512/apps/md.obsidian.Obsidian.png  
+  - name: Install JabRef
+    shell:
+      cmd: flatpak install --system --assumeyes --noninteractive flathub org.jabref.jabref
+  - name: Set up JabRef shortcut
+    shell:
+      cmd: cp /var/lib/flatpak/exports/share/applications/org.jabref.jabref.desktop /usr/share/applications/org.jabref.jabref.desktop && cp /var/lib/flatpak/exports/share/icons/hicolor/128x128/apps/org.jabref.jabref.png /usr/share/icons/hicolor/128x128/apps/org.jabref.jabref.png
+
+-
+  # install readers
+  hosts: localhost
+  connection: local
+  tags: install_readers
+
+  tasks:
+  - name: install Evince
+    apt:
+      name: evince
       update_cache: yes
 
+  roles:
+  - role: webarchitect609.google_chrome
+
 -
-  # Install emacs and Org-roam
+  # install Pandoc & TexLive
   hosts: localhost
   connection: local
   gather_facts: yes
+  tags: install_generator_pandoc
+
+  vars:
+    pandoc_version: "2.17.0.1"
+    texlive_version: "2019.20200218-1"
+    texlive_version_expected: "pdfTeX 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian)"
 
   tasks:
-  - name: Add the Emacs PPA Repository
-    shell:
-      cmd: add-apt-repository ppa:kelleyk/emacs
-      executable: /bin/bash
-  - name: Install emacs 27
+  - name: install TeX Live
     apt:
-      name: emacs27
-      update_cache: yes    
+      name: "texlive={{ texlive_version }}"  
+      update_cache: yes
+  - name: Get pandoc version
+    shell: pandoc --version | grep -m 1 -i pandoc | sed 's/[[:alpha:]|(|[:space:]]//g'
+    register: installed_pandoc_version
+  - name: Get TeX Live version  
+    shell: latex --version | grep -i Tex -m 1 
+    register: installed_texlive_version
+  - name: Display pandoc and texlive versions
+    debug:
+      msg: "pandoc = {{ installed_pandoc_version.stdout }} | texlive = {{ installed_texlive_version.stdout }}"
+  - name: Test pandoc version
+    fail:
+      msg: "Pandoc Version Error: Expected {{ pandoc_version }} | Found {{ installed_pandoc_version.stdout }}"
+    when: installed_pandoc_version.stdout != pandoc_version    
+  - name: Test texlive version
+    fail:
+      msg: "TeX Live Version Error: Expected {{ texlive_version_expected }} | Found {{ installed_texlive_version.stdout }}"
+    when: installed_texlive_version.stdout != texlive_version_expected        
+
+  roles:
+  - role: andrewrothstein.pandoc
+    pandoc_ver: "{{ pandoc_version }}"
 
 # Three dots indicate the end of a YAML document
 ...
