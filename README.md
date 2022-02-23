@@ -10,6 +10,7 @@ This repo provides a Kasm Workspace for developing the definitive text on the pr
 - Chrome
 - [Evince Document Reader](https://wiki.gnome.org/Apps/Evince) 
 - [Pandoc](https://pandoc.org/)
+- [yq](https://mikefarah.gitbook.io/yq/) v4.20.2
 
 ## How to Use this Repo
 
