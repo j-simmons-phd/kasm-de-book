@@ -18,12 +18,13 @@ This repo includes code and packages from a number of outside sources (including
 
 ## How to Use this Repo
 
-1. Clone this repo, giving the new repo a descriptive name for the workspace image to be created
-1. Run `docker-compose pull` to download the image or run `docker-compose build` to build the workspace image 
+1. Download and unzip the latest release
+1. Open the unzipped release folder in the command line 
+1. Run `docker-compose pull` to download the image 
 
 ## Using the image locally
 
-Once built, the image can be pushed into the Kasm server per Kasm documentation or it can be run locally on port 6901 using docker-compose.
+Once downloaded, the image can be pushed into the Kasm server per Kasm documentation or it can be run locally on port 6901 using docker-compose.
 
 - **Starting the image locally:** Run `docker-compose up -d`
 - **Stopping the image locally:** Run `docker-compose down`
