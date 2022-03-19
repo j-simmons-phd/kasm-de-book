@@ -12,6 +12,10 @@ This repo provides a Kasm Workspace for developing the definitive text on the pr
 - [Pandoc](https://pandoc.org/)
 - [yq](https://mikefarah.gitbook.io/yq/) v4.20.2
 
+## A Note on Licensing
+
+This repo includes code and packages from a number of outside sources (including [Kasm Workspaces](https://www.kasmweb.com/)).  The project license file only covers code written by the project author and contributors.  All other code is subject to its authors' terms and conditions.
+
 ## How to Use this Repo
 
 1. Clone this repo, giving the new repo a descriptive name for the workspace image to be created
