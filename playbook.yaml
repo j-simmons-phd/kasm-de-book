@@ -102,25 +102,14 @@
   tags: install_knowledge_tools
 
   tasks:
-  - name: Install flatpak
+  - name: install obsidian
     apt:
-      name: flatpak
-      update_cache: yes  
-  - name: Configure flatpak
-    shell:
-      cmd: flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo    
-  - name: Install Obsidian
-    shell: 
-      cmd: flatpak install --system --assumeyes --noninteractive flathub md.obsidian.Obsidian    
-  - name: Set up Obsidian shortcut
-    shell:
-      cmd: cp /var/lib/flatpak/exports/share/applications/md.obsidian.Obsidian.desktop /usr/share/applications/md.obsidian.Obsidian.desktop && cp /var/lib/flatpak/exports/share/icons/hicolor/512x512/apps/md.obsidian.Obsidian.png /usr/share/icons/hicolor/512x512/apps/md.obsidian.Obsidian.png  
-  - name: Install JabRef
-    shell:
-      cmd: flatpak install --system --assumeyes --noninteractive flathub org.jabref.jabref
-  - name: Set up JabRef shortcut
-    shell:
-      cmd: cp /var/lib/flatpak/exports/share/applications/org.jabref.jabref.desktop /usr/share/applications/org.jabref.jabref.desktop && cp /var/lib/flatpak/exports/share/icons/hicolor/128x128/apps/org.jabref.jabref.png /usr/share/icons/hicolor/128x128/apps/org.jabref.jabref.png
+      deb: /home/kasm-default-profile/install_files/obsidian_0.13.31_amd64.deb
+      update_cache: yes
+  - name: install jabref
+    apt:
+      deb: /home/kasm-default-profile/install_files/jabref_5.5-1_amd64.deb
+      update_cache: yes
 
 -
   # install readers
