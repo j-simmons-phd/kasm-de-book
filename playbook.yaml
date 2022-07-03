@@ -59,7 +59,7 @@
   tags: install_git_keychain
 
   vars:
-    git_version: "2.35.1"
+    git_version: "2.37.0"
     git_version_to_install: "1:{{ git_version }}-0ppa1~ubuntu20.04.1"
     keychain_version: "2.8.5"
     keychain_version_to_install: "{{ keychain_version }}-1"
@@ -112,21 +112,6 @@
       update_cache: yes
 
 -
-  # install readers
-  hosts: localhost
-  connection: local
-  tags: install_readers
-
-  tasks:
-  - name: install Evince
-    apt:
-      name: evince
-      update_cache: yes
-
-  roles:
-  - role: webarchitect609.google_chrome
-
--
   # install Pandoc & TexLive
   hosts: localhost
   connection: local
@@ -134,14 +119,14 @@
   tags: install_generator_pandoc
 
   vars:
-    pandoc_version: "2.17.0.1"
+    pandoc_version: "2.18"
     texlive_version: "2019.20200218-1"
     texlive_version_expected: "pdfTeX 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian)"
 
   tasks:
   - name: install TeX Live
     apt:
-      name: "texlive={{ texlive_version }}"  
+      name: "texlive-full={{ texlive_version }}"  
       update_cache: yes
     # https://mikefarah.gitbook.io/yq/  
   - name: Install yq
@@ -152,6 +137,10 @@
       owner: root
       group: root
       mode: '0755'
+  - name: Install pandoc-citeproc
+    apt: 
+      name: pandoc-citeproc
+      update_cache: yes    
   - name: Get pandoc version
     shell: pandoc --version | grep -m 1 -i pandoc | sed 's/[[:alpha:]|(|[:space:]]//g'
     register: installed_pandoc_version
@@ -173,6 +162,127 @@
   roles:
   - role: andrewrothstein.pandoc
     pandoc_ver: "{{ pandoc_version }}"
+
+-
+  # install readers
+  hosts: localhost
+  connection: local
+  tags: install_readers
+
+  tasks:
+  - name: install Evince
+    apt:
+      name: evince
+      update_cache: yes
+
+  roles:
+  - role: webarchitect609.google_chrome
+
+- 
+  # install sudo for the vs-code role below 
+  hosts: localhost
+  connection: local
+  tasks:
+  - name: Install Sudo
+    apt:
+      name: sudo
+      update_cache: yes
+  - name: Preserve DONT_PROMPT_WSL_INSTALL in sudoers
+    lineinfile:
+      path: "/etc/sudoers"
+      line: "Defaults        env_keep += \"DONT_PROMPT_WSL_INSTALL\""
+    when: wsl2_environment
+
+-
+  # add dev user to give vs code somewhere to install extensions
+  hosts: localhost
+  connection: local
+  tasks:
+  - name: Add dev user
+    user:
+      name: dev
+      uid: 1001
+
+-
+  # install the remainder of the tools
+  hosts: localhost
+  connection: local
+  environment: 
+    DONT_PROMPT_WSL_INSTALL: 1
+  tasks:
+  - name: Create Spell Right Dictionaries Folder
+    file:
+      path: /home/dev/.config/Code/Dictionaries
+      state: directory
+      mode: '0755'
+  - name: Link system dictionaries to Spell Righ
+    shell:
+      cmd: ln -s /usr/share/hunspell/* /home/dev/.config/Code/Dictionaries    
+  - name: Install Gimp
+    apt:
+      name: gimp
+      update_cache: yes  
+  roles:
+    - role: andrewrothstein.pandoc
+      pandoc_ver: "2.18"
+    - role: webarchitect609.google_chrome
+    - role: gantsign.visual-studio-code
+      visual_studio_code_version: "1.65.2*"
+      users:
+        - username: "dev"
+          visual_studio_code_extensions:
+            - rohgarg.jekyll-post
+            - sissel.shopify-liquid
+            - Dedsec727.jekyll-run
+            - CurlyBrackets.markdown-word-count
+            - ban.spellright
+          visual_studio_code_settings_overwrite: yes
+          visual_studio_code_settings: {
+            "extensions.ignoreRecommendations": true,
+            "update.mode": "none",
+            "extensions.autoUpdate": false,
+            "extensions.autoCheckUpdates": false,
+            "terminal.integrated.profiles.linux": {
+              "bash (login)": {
+                "path": "bash",
+                "args": ["-l"]
+                }
+              },
+            "terminal.integrated.defaultProfile.linux": "bash (login)",
+            "markdown-word-count.selectionCount": true,
+            "spellright.language": [
+                "en_US"
+            ],
+            "spellright.documentTypes": [
+                "markdown",
+                "latex",
+                "plaintext"
+            ] 
+          }  
+
+-
+  # Copy VS Code changes to kasm-default-profile and add fix for .gnupg/ permissions
+  hosts: localhost
+  connection: local
+  tasks:
+  - name: Copy VS Code changes to kasm-default-profile
+    shell: 
+      cmd: cp -r /home/dev/.config/Code/ /home/kasm-default-profile/.config/Code/ && cp -r /home/dev/.vscode/ /home/kasm-default-profile/.vscode/
+  - name: Add fix for .gnupg/ permissions
+    lineinfile:
+      path: "/etc/bash.bashrc"
+      line: "chmod 700 ~/.gnupg/"    
+
+-
+  # clean up (remove) dev user now that vs code is installed
+  hosts: localhost
+  connection: local
+  tasks:
+  - name: Remove dev user
+    user:
+      name: dev
+      state: absent
+      remove: yes 
 
 # Three dots indicate the end of a YAML document
 ...
