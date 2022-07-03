@@ -231,9 +231,6 @@
       users:
         - username: "dev"
           visual_studio_code_extensions:
-            - rohgarg.jekyll-post
-            - sissel.shopify-liquid
-            - Dedsec727.jekyll-run
             - CurlyBrackets.markdown-word-count
             - ban.spellright
           visual_studio_code_settings_overwrite: yes
